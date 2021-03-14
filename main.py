@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 
-# all computers which price more then 8000zl
+# url for parser
 url = 'https://www.olx.ua/uk/elektronika/noutbuki-i-aksesuary/'
 
 
@@ -10,7 +10,7 @@ def write_csv(result):
     """
     Write all parsed data from web page in csv file
     """
-    with open ('parsed.csv', 'w') as f:
+    with open ('parsed.csv', 'w', encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(['set=,'])
         for i in result:
@@ -18,7 +18,8 @@ def write_csv(result):
             writer. writerow((i['name'],
                               i['price'],
                               i['address'],
-                              i['url']))
+                              i['url']
+                              ))
 
 
 def clean(text):
@@ -33,8 +34,9 @@ def get_data(url):
     """
     With bs4 get materials from url page
     """
+    # features="html.parser"
     r = requests.get(url)
-    soup = BeautifulSoup(r.content, features="html.parser")
+    soup = BeautifulSoup(r.content)
     table = soup.find('table', {'id': 'offers_table'})
     rows = table.find_all('tr', {'class': 'wrap'})
     result = []
@@ -48,13 +50,16 @@ def get_data(url):
         result.append(item)
     return result
     
-
+# main func
 def main(url):
-    print("I'm working, but not yet completely (")
-    print("'get data' function working ...")
-    get_data(url)
-    print("'get data' function parssed !!!")
-
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content)
+    result = []
+    for i in range(1, 5+1):
+        print(f'Parsing page# {str(i)} of {str(5)}')
+        page_url = url + '?page=' + str(i)
+        result += get_data(page_url)
+    write_csv(result)
 
 if __name__ == '__main__':
     main(url)
